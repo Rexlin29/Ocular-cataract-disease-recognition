@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnose</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.jpg') }}" type="image/jpeg">
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-image: url("/static/images/background.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #333;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .profile-picture {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #ccc;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .profile-picture img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .username {
+            display: inline-block;
+            vertical-align: middle;
+            color: white;
+            font-size: 1rem;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        nav ul li {
+            display: inline;
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .content-container {
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="profile-picture" id="profile-picture">
+            <img src="{{ profile_picture }}" alt="Profile Picture">
+        </div>
+        <div class="username" id="username">{{ session.get('username', 'Guest') }}</div>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('diagnose') }}">Diagnose</a></li>
+                <li><a href="{{ url_for('history') }}">History</a></li>
+                <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                <li><a href="{{ url_for('logout') }}" id="logout-btn">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div class="content-container">
+            <h2>Diagnose Ocular Disease</h2>
+            <div class="upload-container">
+                <form id="uploadForm" action="{{ url_for('diagnose') }}" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="image" id="fileInput" accept="image/*" required>
+                    <button type="button" onclick="uploadImage()">Upload and Diagnose</button>
+                </form>
+            </div>
+            <div class="result" id="result">
+                {% if diagnosis %}
+                    <h3>Diagnosis Result:</h3>
+                    <p>{{ diagnosis }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Ocular Disease Classifier | All rights reserved.</p>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const profileImg = document.getElementById('profile-img');
+
+            // Dynamically load profile picture if stored in sessionStorage
+            const savedProfilePicture = sessionStorage.getItem('profilePicture');
+            if (savedProfilePicture) {
+                profileImg.src = savedProfilePicture;
+            }
+        });
+
+        function uploadImage() {
+            const input = document.getElementById('fileInput');
+            const resultDiv = document.getElementById('result');
+
+            if (!input.files[0]) {
+                resultDiv.textContent = 'Please select an image file.';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', input.files[0]);
+
+            fetch('http://127.0.0.1:5001/api/diagnose', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const formattedResult = data.result ? data.result.replace(/\n/g, "<br>") : 'No result returned';
+                resultDiv.innerHTML = `<h3>Diagnosis Result:</h3><p>${formattedResult}</p>`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultDiv.textContent = 'An error occurred while processing the image.';
+            });
+        }
+    </script>
+</body>
+</html>
