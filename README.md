@@ -134,8 +134,8 @@ Refer to `database_ODC.png` for the database schema.
 
 ## Contributors
 
-* Rexlin Nadar
-* Jenica Kodankandath
+* Rexlin Nadar (ID: Rexlin29)
+* Jenica Kodankandath (ID: Theresenic)
 * Jasmitkaur Mukhtiar
 * Tanvi Mhasal
 
